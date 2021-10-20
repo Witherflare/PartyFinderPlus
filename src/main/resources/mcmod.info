@@ -1,0 +1,18 @@
+[
+    {
+        "modid": "partyfinderplus",
+        "name": "PartyFinderPlus",
+        "description": "",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "url": "",
+        "updateUrl": "",
+        "authorList": [
+            "Witherflare"
+        ],
+        "credits": "",
+        "logoFile": "",
+        "screenshots": [],
+        "dependencies": []
+    }
+]
