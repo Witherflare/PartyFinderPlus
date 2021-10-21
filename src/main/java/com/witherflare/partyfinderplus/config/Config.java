@@ -13,7 +13,7 @@ public class Config extends Vigilant {
         type = PropertyType.SWITCH,
         name = "Toggle PartyFinderPlus",
         description = "Enables PartyFinderPlus.",
-        category = "General"
+        category = "1. General"
     )
     public boolean toggled = true;
 
@@ -21,7 +21,7 @@ public class Config extends Vigilant {
         type = PropertyType.TEXT,
         name = "API Key",
         description = "Enter a valid API key for PartyFinderPlus to work. If you do not input a valid API key, PartyFinderPlus will not work.",
-        category = "General",
+        category = "1. General",
         protectedText = true
     )
     public String apiKey = "";
@@ -29,7 +29,7 @@ public class Config extends Vigilant {
     @Property(
             type = PropertyType.SWITCH,
             name = "Enable Autokick",
-            category = "Autokick"
+            category = "2. Autokick"
     )
     public boolean autoKickToggled = true;
 
@@ -37,7 +37,7 @@ public class Config extends Vigilant {
             type = PropertyType.SWITCH,
             name = "Send Kick Reason in Party Chat",
             description = "When enabled, when Autokick kicks someone, it will send the kick reason in party chat.",
-            category = "Autokick"
+            category = "2. Autokick"
     )
     public boolean autoKickReason = false;
 
