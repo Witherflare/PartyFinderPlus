@@ -6,7 +6,7 @@ Template mod with Mixins and Essential.
 --tweakClass
 gg.essential.loader.stage0.EssentialSetupTweaker
 --mixin
-mixins.examplemod.json
+mixins.partyfinderplus.json
 ```
 
 ### VM options:

@@ -1,6 +1,6 @@
 {
     "compatibilityLevel": "JAVA_8",
-    "package": "dev.debuggings.examplemod.mixins",
+    "package": "dev.debuggings.partyfinderplus.mixins",
     "refmap": "mixins.mixintest.refmap.json",
     "mixins": [
         "MixinMinecraft"
