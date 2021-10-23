@@ -1,13 +1,12 @@
 package com.witherflare.partyfinderplus;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+import com.typesafe.config.ConfigException;
 import com.witherflare.partyfinderplus.commands.PartyFinderPlusCommand;
 import com.witherflare.partyfinderplus.config.Config;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,15 +22,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import scala.math.BigInt;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Mod(
     modid = PartyFinderPlus.MOD_ID,
@@ -62,10 +59,13 @@ public class PartyFinderPlus {
         Minecraft mc = Minecraft.getMinecraft();
         mc.thePlayer.addChatMessage(new ChatComponentText(message));
     }
+    void say (String message) {
+        Minecraft.getMinecraft().thePlayer.sendChatMessage(message);
+    }
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) throws IOException {
-
+        int KICKDELAY = 500;
         String PREFIX = "§dPartyFinderPlus §r>§e";
         String msg = event.message.getUnformattedText();
         String formattedMsg = event.message.getFormattedText();
@@ -130,13 +130,13 @@ public class PartyFinderPlus {
                 }
                 try {
                     ArrayList<String> profileIds = new ArrayList<String>();
-                    ArrayList<Integer> saves = new ArrayList<Integer>();
+                    ArrayList<Long> saves = new ArrayList<Long>();
 
                     profiles.forEach(profileData -> {
                         profileIds.add(profileData.getAsJsonObject().get("profile_id").getAsString());
-                        saves.add(profileData.getAsJsonObject().get("members").getAsJsonObject().get(uuid).getAsJsonObject().get("last_save").getAsInt());
+                        saves.add(profileData.getAsJsonObject().get("members").getAsJsonObject().get(uuid).getAsJsonObject().get("last_save").getAsLong());
                     });
-                    int maxSave = -2147483647;
+                    long maxSave = -999999999999999999l;
 
                     for (int i = 0; i < saves.size(); i++) {
                         if (saves.get(i) > maxSave) {
@@ -144,27 +144,112 @@ public class PartyFinderPlus {
                         }
                     }
 
+
                     String currentProfileId = profileIds.get(saves.indexOf(maxSave));
 
                     HttpResponse res2 = null;
-                    try {
-                        res2 = client.execute(new HttpGet("https://api.hypixel.net/skyblock/profiles?key=" + config.apiKey + "&uuid=" + uuid));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+                    res2 = client.execute(new HttpGet("https://api.hypixel.net/player?key=" + config.apiKey + "&uuid=" + uuid));
+
                     String body2 = null;
-                    try {
-                        body2 = EntityUtils.toString(res1.getEntity());
-                    } catch (IOException e) {
-                        e.printStackTrace();
+
+                    body2 = EntityUtils.toString(res2.getEntity());
+
+
+                    JsonObject generalData = parser.parse(body2).getAsJsonObject();
+                    int secretCount = generalData.get("player").getAsJsonObject().get("achievements").getAsJsonObject().get("skyblock_treasure_hunter").getAsInt();
+                    chat(Integer.toString(secretCount));
+
+                    int requiredSecrets = 0;
+                    if (config.secretMin == 1) {requiredSecrets=1000;}
+                    if (config.secretMin == 2) {requiredSecrets=2500;}
+                    if (config.secretMin == 3) {requiredSecrets=5000;}
+                    if (config.secretMin == 4) {requiredSecrets=7500;}
+                    if (config.secretMin == 5) {requiredSecrets=10000;}
+                    if (config.secretMin == 6) {requiredSecrets=12500;}
+                    if (config.secretMin == 7) {requiredSecrets=15000;}
+                    if (config.secretMin == 8) {requiredSecrets=20000;}
+
+                    chat(userClass);
+
+                    if (userClass.contains("Healer") && !config.healerAllowed) {
+                        chat(PREFIX + " §c<!> §eThis user is playing a class you have not allowed to join! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Disallowed Class");
+                        Thread.sleep(KICKDELAY);
+                        say("/p kick " + user);
+                    } else if (userClass.contains("Mage") && !config.mageAllowed) {
+                        chat(PREFIX + " §c<!> §eThis user is playing a class you have not allowed to join! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Disallowed Class");
+                        Thread.sleep(KICKDELAY);
+                        say("/p kick " + user);
+                    } else if (userClass.contains("Berserk") && !config.berserkAllowed) {
+                        chat(PREFIX + " §c<!> §eThis user is playing a class you have not allowed to join! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Disallowed Class");
+                        Thread.sleep(KICKDELAY);
+                        say("/p kick " + user);
+                    } else if (userClass.contains("Archer") && !config.archerAllowed) {
+                        chat(PREFIX + " §c<!> §eThis user is playing a class you have not allowed to join! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Disallowed Class");
+                        Thread.sleep(KICKDELAY);
+                        say("/p kick " + user);
+                    } else if (userClass.contains("Tank") && !config.tankAllowed) {
+                        chat(PREFIX + " §c<!> §eThis user is playing a class you have not allowed to join! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Disallowed Class");
+                        Thread.sleep(KICKDELAY);
+                        say("/p kick " + user);
+                    } else if (requiredSecrets >= secretCount) {
+                        chat(PREFIX + " §c<!> §eThis user does not have the required amount of secrets to join! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Low Secrets");
+                        Thread.sleep(KICKDELAY);
+                        say("/p kick " + user);
+                    } else {
+                        // The user made it past the first checks, hooray!
+                        HttpResponse res3 = null;
+
+                        res3 = client.execute(new HttpGet("https://api.hypixel.net/skyblock/profile?key=" + config.apiKey + "&uuid=" + uuid + "&profile=" + currentProfileId));
+
+                        String body3 = null;
+
+                        body3 = EntityUtils.toString(res3.getEntity());
+
+                        JsonObject inventoryData = parser.parse(body3).getAsJsonObject();
+
+                        Set<String> keys = new HashSet<>();
+                        for (Map.Entry<String, JsonElement> entry : inventoryData.get("profile").getAsJsonObject().get("members").getAsJsonObject().entrySet()) {
+                            keys.add(entry.getKey());
+                        }
+
+
+                        String invContents = null;
+                        try {
+                            for (String x : keys) {
+                                invContents = inventoryData.get("profile").getAsJsonObject().get("members").getAsJsonObject().get(uuid).getAsJsonObject().get("inv_contents").getAsJsonObject().get("data").getAsString();
+                            }
+                        } catch (NullPointerException e) {
+                            chat(PREFIX + " &cThis user does not have their API on!");
+                        }
+
+                        byte[] bytearray = java.util.Base64.getDecoder().decode(invContents);
+                        ByteArrayInputStream inputstream = new java.io.ByteArrayInputStream(bytearray);
+                        NBTTagCompound nbt = net.minecraft.nbt.CompressedStreamTools.readCompressed(inputstream);
+                        NBTTagList itemTagList = nbt.getTagList("i", 10);
+                        String invItems = itemTagList.toString();
+
+                        if (!invItems.contains(":\"WITHER_SHIELD_SCROLL\"") && config.needsNecronBlade) {
+                            chat(PREFIX + " §c<!> §eThis user does not have a Necron Blade! Kicking user.");
+                            if (config.autoKickReason) say("/pc " + user + " kicked for: No Necron Blade");
+                            Thread.sleep(KICKDELAY);
+                            say("/p kick " + user);
+                        }
+                        if (!invItems.contains("id:\"TERMINATOR\"") && config.needsTerm) {
+                            chat(PREFIX + " §c<!> §eThis user does not have a Terminator! Kicking user.");
+                            if (config.autoKickReason) say("/pc " + user + " kicked for: No Terminator");
+                            Thread.sleep(KICKDELAY);
+                            say("/p kick " + user);
+                        }
+
                     }
-
-                    JsonObject skyblockData = parser.parse(body2).getAsJsonObject();
-
-                    
-
-
-                } catch (Error e) {
+                } catch (Error | InterruptedException | IOException e) {
                     chat(PREFIX + " §cAn error has occured.");
                 }
                 // Dungeon Finder > [NAME] joined the dungeon group! ([CLASS] Level [CLASS LEVEL])

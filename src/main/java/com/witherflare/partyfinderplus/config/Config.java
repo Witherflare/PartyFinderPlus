@@ -45,10 +45,61 @@ public class Config extends Vigilant {
             type = PropertyType.SELECTOR,
             name = "Secret Minimum",
             description = "If someone's secret count is below this number, they will be kicked from the party automatically.",
-            category = "Autokick",
+            category = "2. Autokick",
             options = {"None", "1000", "2500", "5000", "7500", "10000", "12500", "15000", "20000"}
     )
     public int secretMin = 0;
+
+    @Property(
+            type = PropertyType.SWITCH,
+            name = "Require Necron Blade",
+            description = "When enabled, if someone does not have a necron blade (Hyperion/Valkyrie/Scylla/Astraea), they will be kicked from the party.",
+            category = "2. Autokick"
+    )
+    public boolean needsNecronBlade = false;
+
+    @Property(
+            type = PropertyType.SWITCH,
+            name = "Require Terminator",
+            description = "When enabled, if someone does not have a Terminator they will be kicked from the party.",
+            category = "2. Autokick"
+    )
+    public boolean needsTerm = false;
+
+    @Property(
+            type = PropertyType.CHECKBOX,
+            name = "Healer Allowed",
+            category = "2. Autokick"
+    )
+    public boolean healerAllowed = true;
+
+    @Property(
+            type = PropertyType.CHECKBOX,
+            name = "Mage Allowed",
+            category = "2. Autokick"
+    )
+    public boolean mageAllowed = true;
+
+    @Property(
+            type = PropertyType.CHECKBOX,
+            name = "Berserk Allowed",
+            category = "2. Autokick"
+    )
+    public boolean berserkAllowed = true;
+
+    @Property(
+            type = PropertyType.CHECKBOX,
+            name = "Archer Allowed",
+            category = "2. Autokick"
+    )
+    public boolean archerAllowed = true;
+
+    @Property(
+            type = PropertyType.CHECKBOX,
+            name = "Tank Allowed",
+            category = "2. Autokick"
+    )
+    public boolean tankAllowed = true;
 
 
     public Config() {
