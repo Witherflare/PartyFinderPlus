@@ -24,7 +24,7 @@ apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "org.spongepowered.mixin"
 
 group = 'com.witherflare'
-version = '1.0'
+version = '0.1'
 archivesBaseName = 'partyfinderplus'
 
 compileJava.options.encoding = 'UTF-8'

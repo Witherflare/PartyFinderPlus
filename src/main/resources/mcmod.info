@@ -2,9 +2,9 @@
     {
         "modid": "partyfinderplus",
         "name": "PartyFinderPlus",
-        "description": "",
-        "version": "${version}",
-        "mcversion": "${mcversion}",
+        "description": "Mod made for improving the Hypixel party finder experience.",
+        "version": "0.1",
+        "mcversion": "1.8.9",
         "url": "witherflare.com",
         "updateUrl": "",
         "authorList": [
