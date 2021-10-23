@@ -17,3 +17,5 @@ Require Terminator As Archer - Only require a Terminator to join if the person t
 Class-specific - Set specific classes to be automatically kicked
 
 **Autokicker requires a valid Hypixel API key!**
+
+Download: https://github.com/Witherflare/PartyFinderPlus/releases
