@@ -39,7 +39,7 @@ public class PartyFinderPlus {
 
     public static final String MOD_ID = "partyfinderplus";
     public static final String MOD_NAME = "PartyFinderPlus";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "0.2.0";
     public static final String configLocation = "./config/partyfinderplus.toml";
 
     public static final Logger logger = LogManager.getLogger();
@@ -70,7 +70,7 @@ public class PartyFinderPlus {
         String msg = event.message.getUnformattedText();
         String formattedMsg = event.message.getFormattedText();
 
-        if (msg.contains("joined the dungeon group! ")) {
+        if (msg.contains("joined the dungeon group! ") && !msg.contains(":")) {
             if (!config.toggled) return;
             if (!config.autoKickToggled) return;
             if (config.apiKey.length() < 1) {
@@ -84,8 +84,6 @@ public class PartyFinderPlus {
                 userClass = userClass.split(" Level ")[0];
                 userClass = userClass.replaceAll("[()]", "");
                 user = user.split(" joined the dungeon group! ")[0];
-
-                chat(user);
 
                 HttpClient client = HttpClients.createDefault();
                 JsonParser parser = new JsonParser();
@@ -146,31 +144,26 @@ public class PartyFinderPlus {
 
 
                     String currentProfileId = profileIds.get(saves.indexOf(maxSave));
-
                     HttpResponse res2 = null;
-
                     res2 = client.execute(new HttpGet("https://api.hypixel.net/player?key=" + config.apiKey + "&uuid=" + uuid));
-
                     String body2 = null;
-
                     body2 = EntityUtils.toString(res2.getEntity());
 
 
                     JsonObject generalData = parser.parse(body2).getAsJsonObject();
                     int secretCount = generalData.get("player").getAsJsonObject().get("achievements").getAsJsonObject().get("skyblock_treasure_hunter").getAsInt();
-                    chat(Integer.toString(secretCount));
 
-                    int requiredSecrets = 0;
-                    if (config.secretMin == 1) {requiredSecrets=1000;}
-                    if (config.secretMin == 2) {requiredSecrets=2500;}
-                    if (config.secretMin == 3) {requiredSecrets=5000;}
-                    if (config.secretMin == 4) {requiredSecrets=7500;}
-                    if (config.secretMin == 5) {requiredSecrets=10000;}
-                    if (config.secretMin == 6) {requiredSecrets=12500;}
-                    if (config.secretMin == 7) {requiredSecrets=15000;}
-                    if (config.secretMin == 8) {requiredSecrets=20000;}
+                    if (config.extraInfo) {chat(PREFIX + " §7" + user + "§e has §b" + secretCount + "§e secrets.");}
 
-                    chat(userClass);
+                    int requiredSecrets = config.secretMin;
+//                    if (config.secretMin == 1) {requiredSecrets=1000;}
+//                    if (config.secretMin == 2) {requiredSecrets=2500;}
+//                    if (config.secretMin == 3) {requiredSecrets=5000;}
+//                    if (config.secretMin == 4) {requiredSecrets=7500;}
+//                    if (config.secretMin == 5) {requiredSecrets=10000;}
+//                    if (config.secretMin == 6) {requiredSecrets=12500;}
+//                    if (config.secretMin == 7) {requiredSecrets=15000;}
+//                    if (config.secretMin == 8) {requiredSecrets=20000;}
 
                     if (userClass.contains("Healer") && !config.healerAllowed) {
                         chat(PREFIX + " §c<!> §eThis user is playing a class you have not allowed to join! Kicking user.");
@@ -198,27 +191,22 @@ public class PartyFinderPlus {
                         Thread.sleep(KICKDELAY);
                         say("/p kick " + user);
                     } else if (requiredSecrets >= secretCount) {
-                        chat(PREFIX + " §c<!> §eThis user does not have the required amount of secrets to join! Kicking user.");
-                        if (config.autoKickReason) say("/pc " + user + " kicked for: Low Secrets");
+                        chat(PREFIX + " §c<!> §eThis user does not have the required amount of secrets to join §7(" + secretCount + "/" + requiredSecrets + ")§e! Kicking user.");
+                        if (config.autoKickReason) say("/pc " + user + " kicked for: Low Secrets (" + secretCount + "/" + requiredSecrets + ")");
                         Thread.sleep(KICKDELAY);
                         say("/p kick " + user);
                     } else {
                         // The user made it past the first checks, hooray!
                         HttpResponse res3 = null;
-
                         res3 = client.execute(new HttpGet("https://api.hypixel.net/skyblock/profile?key=" + config.apiKey + "&uuid=" + uuid + "&profile=" + currentProfileId));
-
                         String body3 = null;
-
                         body3 = EntityUtils.toString(res3.getEntity());
-
                         JsonObject inventoryData = parser.parse(body3).getAsJsonObject();
 
                         Set<String> keys = new HashSet<>();
                         for (Map.Entry<String, JsonElement> entry : inventoryData.get("profile").getAsJsonObject().get("members").getAsJsonObject().entrySet()) {
                             keys.add(entry.getKey());
                         }
-
 
                         String invContents = null;
                         try {
@@ -247,9 +235,14 @@ public class PartyFinderPlus {
                             Thread.sleep(KICKDELAY);
                             say("/p kick " + user);
                         }
-
+                        if (!invItems.contains("id:\"TERMINATOR\"") && config.archTerm && userClass == "Archer") {
+                            chat(PREFIX + " §c<!> §eThis user does not have a Terminator! Kicking user.");
+                            if (config.autoKickReason) say("/pc " + user + " kicked for: No Terminator");
+                            Thread.sleep(KICKDELAY);
+                            say("/p kick " + user);
+                        }
                     }
-                } catch (Error | InterruptedException | IOException e) {
+                } catch (Error | InterruptedException | IOException | NullPointerException e) {
                     chat(PREFIX + " §cAn error has occured.");
                 }
                 // Dungeon Finder > [NAME] joined the dungeon group! ([CLASS] Level [CLASS LEVEL])

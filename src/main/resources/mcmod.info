@@ -2,10 +2,10 @@
     {
         "modid": "partyfinderplus",
         "name": "PartyFinderPlus",
-        "description": "Mod made for improving the Hypixel party finder experience.",
-        "version": "0.1",
+        "description": "Mod made for improving the Hypixel Skyblock party finder experience.",
+        "version": "0.2.0",
         "mcversion": "1.8.9",
-        "url": "witherflare.com",
+        "url": "https://www.witherflare.com",
         "updateUrl": "",
         "authorList": [
             "Witherflare"
