@@ -1,7 +1,6 @@
 package com.witherflare.partyfinderplus;
 
 import com.google.gson.*;
-import com.typesafe.config.ConfigException;
 import com.witherflare.partyfinderplus.commands.PartyFinderPlusCommand;
 import com.witherflare.partyfinderplus.config.Config;
 import net.minecraft.client.Minecraft;
@@ -17,18 +16,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import scala.math.BigInt;
 
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Mod(
     modid = PartyFinderPlus.MOD_ID,
@@ -37,9 +31,15 @@ import java.util.stream.Collectors;
 )
 public class PartyFinderPlus {
 
+    /* When updating mod version, change these files:
+    mcmod.info
+    build.gradle
+    PartyFinderPlus.java
+     */
+
     public static final String MOD_ID = "partyfinderplus";
     public static final String MOD_NAME = "PartyFinderPlus";
-    public static final String VERSION = "0.2.0";
+    public static final String VERSION = "0.2.1";
     public static final String configLocation = "./config/partyfinderplus.toml";
 
     public static final Logger logger = LogManager.getLogger();
@@ -66,6 +66,7 @@ public class PartyFinderPlus {
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) throws IOException {
         int KICKDELAY = 500;
+
         String PREFIX = "§dPartyFinderPlus §r>§e";
         String msg = event.message.getUnformattedText();
         String formattedMsg = event.message.getFormattedText();
@@ -73,11 +74,16 @@ public class PartyFinderPlus {
         if (msg.contains("joined the dungeon group! ") && !msg.contains(":")) {
             if (!config.toggled) return;
             if (!config.autoKickToggled) return;
-            if (config.apiKey.length() < 1) {
-                chat(PREFIX + " §cYour API key is not set! Make sure you set your API key in /pfp.");
-            }
+
 
             new Thread(() -> {
+                boolean sentFeedback = false;
+                if (config.apiKey.length() < 1) {
+                    if (!sentFeedback) {
+                        chat(PREFIX + " §cYour API key is not set! Make sure you set your API key in /pfp.");
+                        sentFeedback = true;
+                    }
+                }
                 // Get the user and their class
                 String user = msg.split("Dungeon Finder > ")[1];
                 String userClass = user.split(" joined the dungeon group! ")[1];
@@ -124,7 +130,8 @@ public class PartyFinderPlus {
                 try {
                     profiles = hypixelProfileData.get("profiles").getAsJsonArray();
                 } catch (NullPointerException e) {
-                    chat(PREFIX + " §cAn error occured while grabbing the profile data of §e" + user + "§c. Make sure your API key is valid and try again.");
+                    System.out.println(e.getMessage());
+                    if (!sentFeedback) {chat(PREFIX + " §cAn error occured while grabbing the profile data of §e" + user + "§c. Make sure your API key is valid and try again.");sentFeedback = true;}
                 }
                 try {
                     ArrayList<String> profileIds = new ArrayList<String>();
@@ -191,7 +198,7 @@ public class PartyFinderPlus {
                         Thread.sleep(KICKDELAY);
                         say("/p kick " + user);
                     } else if (requiredSecrets >= secretCount) {
-                        chat(PREFIX + " §c<!> §eThis user does not have the required amount of secrets to join §7(" + secretCount + "/" + requiredSecrets + ")§e! Kicking user.");
+                        chat(PREFIX + " §c<!> §eThis user does not have the required amount of secrets to join! §7(" + secretCount + "/" + requiredSecrets + ")§e Kicking user.");
                         if (config.autoKickReason) say("/pc " + user + " kicked for: Low Secrets (" + secretCount + "/" + requiredSecrets + ")");
                         Thread.sleep(KICKDELAY);
                         say("/p kick " + user);
@@ -214,7 +221,7 @@ public class PartyFinderPlus {
                                 invContents = inventoryData.get("profile").getAsJsonObject().get("members").getAsJsonObject().get(uuid).getAsJsonObject().get("inv_contents").getAsJsonObject().get("data").getAsString();
                             }
                         } catch (NullPointerException e) {
-                            chat(PREFIX + " &cThis user does not have their API on!");
+                            if (!sentFeedback) {chat(PREFIX + " §cThis user does not have their API on!");sentFeedback = true;}
                         }
 
                         byte[] bytearray = java.util.Base64.getDecoder().decode(invContents);
@@ -243,7 +250,10 @@ public class PartyFinderPlus {
                         }
                     }
                 } catch (Error | InterruptedException | IOException | NullPointerException e) {
-                    chat(PREFIX + " §cAn error has occured.");
+                    if (!sentFeedback) {
+                        chat(PREFIX + " §cAn error has occured.");
+                        sentFeedback = true;
+                    }
                 }
                 // Dungeon Finder > [NAME] joined the dungeon group! ([CLASS] Level [CLASS LEVEL])
             }).start();
